@@ -1,0 +1,243 @@
+[gd_scene load_steps=6 format=3 uid="uid://jccfqd1bt8kv"]
+
+[ext_resource type="Shader" uid="uid://ip2xu8ymh6kb" path="res://Normal.tres" id="1_3e0ix"]
+[ext_resource type="Script" path="res://Pointer.gd" id="3_2bwwu"]
+
+[sub_resource type="GDScript" id="GDScript_atqhd"]
+script/source = "extends Control
+
+@onready var vp:SubViewport=$HBoxContainer/SubViewportContainer/SubViewport
+@onready var cr:ColorRect=$HBoxContainer/SubViewportContainer/SubViewport/ColorRect
+@onready var degTxt=$HBoxContainer/VBoxContainer/HFlowContainer/CodeEdit
+@onready var txtCode=$HBoxContainer/VBoxContainer/HBoxContainer/TextEdit
+@onready var txtRgb=$HBoxContainer/VBoxContainer/TextEdit2
+@export var color:Color
+#@onready var point:SubViewport=$SubViewportContainer/Node2D
+signal pointerChange(color:Color)
+signal hoverPointerChange(color:Color)
+#@onready var s:Sprite2D=$Sprite2D
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+
+func _on_spin_box_value_changed(value):
+	pass # Replace with function body.
+
+func _on_spin_box_2_value_changed(value):
+	cr.material.set_shader_parameter ( \"ringsNo\",value )
+	pass # Replace with function body.
+
+func _on_button_pressed():
+	DisplayServer.clipboard_set(txtCode.text)
+	pass # Replace with function body.
+
+func _on_btn_deg_add_pressed():
+	var value=int(degTxt.text)
+	match value:
+		1: value=5
+		5: value=10
+		10: value=15
+		15: value=30
+		30: value=45
+		45: value=90
+		#60: value=90
+	degTxt.text=\"%d\" % value
+	cr.material.set_shader_parameter ( \"degNo\",value )
+	pass # Replace with function body.
+
+func _on_btn_deg_sub_pressed():
+
+	var value=int(degTxt.text)
+	match value:
+		5: value=1
+		10: value=5
+		15: value=10
+		30: value=15
+		45: value=30
+		90: value=45
+		#90: value=60
+	degTxt.text=\"%d\" % value
+	cr.material.set_shader_parameter ( \"degNo\",value )
+	pass # Replace with function body.
+
+func _on_color_picked(color):
+	txtCode.text=color.to_html(false)
+	txtRgb.text=\"(%1.2f,%1.2f,%1.2f)\" % [color.r,color.g,color.b]
+	pass # Replace with function body.
+"
+
+[sub_resource type="GDScript" id="GDScript_wr2w0"]
+script/source = "extends SubViewportContainer
+
+signal colorPicked(color:Color)
+signal colorHover(color:Color)
+@onready var cr:ColorRect=$SubViewport/ColorRect
+@onready var vp:SubViewport=$SubViewport
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+
+func _gui_input(event):
+	var p=event.position
+	if event is InputEventMouseMotion:
+		var img=vp.get_texture().get_image()
+		var pixel=img.get_pixel(p.x,p.y);
+		colorHover.emit(pixel)
+	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
+		var img=vp.get_texture().get_image()
+		var pixel=img.get_pixel(p.x,p.y);
+		colorPicked.emit(pixel)
+		#cr.material.set_shader_parameter( \"selectedColor\",pixel )
+	pass
+
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lb8lh"]
+shader = ExtResource("1_3e0ix")
+shader_parameter/degNo = 15
+shader_parameter/ringsNo = 5
+
+[node name="ColorPicker" type="Control"]
+clip_contents = true
+custom_minimum_size = Vector2(400, 256)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -128.0
+offset_right = 200.0
+offset_bottom = 128.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_atqhd")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -128.0
+offset_bottom = 128.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+script = SubResource("GDScript_wr2w0")
+metadata/_edit_use_anchors_ = true
+
+[node name="SubViewport" type="SubViewport" parent="HBoxContainer/SubViewportContainer"]
+handle_input_locally = false
+snap_2d_vertices_to_pixel = true
+size = Vector2i(256, 256)
+size_2d_override = Vector2i(256, 256)
+render_target_update_mode = 4
+
+[node name="ColorRect" type="ColorRect" parent="HBoxContainer/SubViewportContainer/SubViewport"]
+material = SubResource("ShaderMaterial_lb8lh")
+offset_right = 256.0
+offset_bottom = 256.0
+mouse_filter = 1
+mouse_force_pass_scroll_events = false
+mouse_default_cursor_shape = 3
+color = Color(0, 0, 0, 1)
+
+[node name="Node2D" type="Node2D" parent="HBoxContainer/SubViewportContainer"]
+position = Vector2(127, 127)
+script = ExtResource("3_2bwwu")
+code = Color(1, 0.164706, 0.537255, 1)
+
+[node name="Node2D2" type="Node2D" parent="HBoxContainer/SubViewportContainer"]
+position = Vector2(254, 254)
+script = ExtResource("3_2bwwu")
+color = Color(1, 1, 1, 0.498039)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Deg div"
+metadata/_edit_use_anchors_ = true
+
+[node name="HFlowContainer" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CodeEdit" type="CodeEdit" parent="HBoxContainer/VBoxContainer/HFlowContainer"]
+custom_minimum_size = Vector2(100, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "15"
+editable = false
+metadata/_edit_use_anchors_ = true
+
+[node name="btnDegAdd" type="Button" parent="HBoxContainer/VBoxContainer/HFlowContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "+"
+metadata/_edit_use_anchors_ = true
+
+[node name="btnDegSub" type="Button" parent="HBoxContainer/VBoxContainer/HFlowContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "-"
+metadata/_edit_use_anchors_ = true
+
+[node name="Label2" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "Rings div"
+metadata/_edit_use_anchors_ = true
+
+[node name="SpinBox2" type="SpinBox" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+min_value = 1.0
+max_value = 127.0
+value = 5.0
+metadata/_edit_use_anchors_ = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TextEdit" type="TextEdit" parent="HBoxContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "#ffffff"
+metadata/_edit_use_anchors_ = true
+
+[node name="Button" type="Button" parent="HBoxContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Copy"
+metadata/_edit_use_anchors_ = true
+
+[node name="TextEdit2" type="TextEdit" parent="HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "(0,0,1)"
+metadata/_edit_use_anchors_ = true
+
+[connection signal="colorHover" from="HBoxContainer/SubViewportContainer" to="HBoxContainer/SubViewportContainer/Node2D2" method="redraw"]
+[connection signal="colorPicked" from="HBoxContainer/SubViewportContainer" to="." method="_on_color_picked"]
+[connection signal="colorPicked" from="HBoxContainer/SubViewportContainer" to="HBoxContainer/SubViewportContainer/Node2D" method="redraw"]
+[connection signal="mouse_entered" from="HBoxContainer/SubViewportContainer/SubViewport/ColorRect" to="." method="_on_color_rect_mouse_entered"]
+[connection signal="mouse_exited" from="HBoxContainer/SubViewportContainer/SubViewport/ColorRect" to="." method="_on_color_rect_mouse_exited"]
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/HFlowContainer/btnDegAdd" to="." method="_on_btn_deg_add_pressed"]
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/HFlowContainer/btnDegSub" to="." method="_on_btn_deg_sub_pressed"]
+[connection signal="value_changed" from="HBoxContainer/VBoxContainer/SpinBox2" to="." method="_on_spin_box_2_value_changed"]
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/HBoxContainer/Button" to="." method="_on_button_pressed"]
