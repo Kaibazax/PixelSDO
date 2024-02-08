@@ -1,6 +1,53 @@
-[gd_scene load_steps=2 format=3 uid="uid://nfeywppnx2fo"]
+[gd_scene load_steps=6 format=3 uid="uid://nfeywppnx2fo"]
 
 [ext_resource type="PackedScene" uid="uid://jccfqd1bt8kv" path="res://ColorPicker.tscn" id="1_pc3l0"]
+[ext_resource type="Texture2D" uid="uid://3da3my1d4trn" path="res://icon.svg" id="1_tnnjp"]
+
+[sub_resource type="GDScript" id="GDScript_22pdk"]
+script/source = "extends Control
+@onready var canvas=$HSplitContainer/SubViewportContainer/SubViewport
+@onready var light=$HSplitContainer/SubViewportContainer/SubViewport/DirectionalLight2D
+@onready var curLayer=$HSplitContainer/SubViewportContainer/SubViewport/Sprite2D
+var textture:ImageTexture
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	#textture=ImageTexture.create_from_image()
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+
+
+
+func _on_h_slider_value_changed(value):
+	light.rotation_degrees=value
+	pass # Replace with function body.
+"
+
+[sub_resource type="GDScript" id="GDScript_x5r1m"]
+script/source = "extends SubViewport
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+
+func _unhandled_input(event):
+	if !(event is InputEventMouseButton):
+		return
+	print(event.position)
+	pass
+"
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_8ikg2"]
+diffuse_texture = ExtResource("1_tnnjp")
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -9,14 +56,40 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = SubResource("GDScript_22pdk")
 
-[node name="ColorPicker" parent="." instance=ExtResource("1_pc3l0")]
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_bottom = 0.0
-offset_left = -400.0
-offset_right = 0.0
-offset_bottom = 256.0
-grow_horizontal = 0
-grow_vertical = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offset = 700
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HSplitContainer"]
+layout_mode = 2
+
+[node name="SubViewport" type="SubViewport" parent="HSplitContainer/SubViewportContainer"]
+handle_input_locally = false
+render_target_update_mode = 4
+script = SubResource("GDScript_x5r1m")
+
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="HSplitContainer/SubViewportContainer/SubViewport"]
+
+[node name="Sprite2D" type="Sprite2D" parent="HSplitContainer/SubViewportContainer/SubViewport"]
+texture = SubResource("CanvasTexture_8ikg2")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
+layout_mode = 2
+
+[node name="ColorPicker" parent="HSplitContainer/VBoxContainer" instance=ExtResource("1_pc3l0")]
+layout_mode = 2
+
+[node name="HSlider" type="HSlider" parent="HSplitContainer/VBoxContainer"]
+layout_mode = 2
+max_value = 360.0
+page = 30.0
+rounded = true
+
+[connection signal="value_changed" from="HSplitContainer/VBoxContainer/HSlider" to="." method="_on_h_slider_value_changed"]

@@ -11,11 +11,14 @@ config_version=5
 [application]
 
 config/name="PixelSDO"
-run/main_scene="res://ColorPicker.tscn"
+run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[dotnet]
+
+project/assembly_name="PixelSDO"
+
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://cqha11127rxwp"]
+
+[ext_resource type="Shader" uid="uid://dcaxptsila061" path="res://ShaderTest.tres" id="1_64dwu"]
+[ext_resource type="Texture2D" uid="uid://l0rkm37xqmdk" path="res://hm.png" id="2_f5sr4"]
+[ext_resource type="Texture2D" uid="uid://6kapt5ti7jsw" path="res://CL.png" id="3_88tu5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tttj5"]
+shader = ExtResource("1_64dwu")
+shader_parameter/Texture2DParameter = ExtResource("2_f5sr4")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_75lpe"]
+shader = ExtResource("1_64dwu")
+shader_parameter/Texture2DParameter = ExtResource("2_f5sr4")
+
+[node name="ShaderTest" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+material = SubResource("ShaderMaterial_tttj5")
+position = Vector2(546, 331)
+texture = ExtResource("3_88tu5")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_75lpe")
+offset_right = 264.0
+offset_bottom = 300.0
+
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="."]
+position = Vector2(283, 211)
+rotation = 0.485065
+shadow_color = Color(0, 0, 0, 1)
+height = 0.25
