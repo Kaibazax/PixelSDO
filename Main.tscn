@@ -1,17 +1,33 @@
 [gd_scene load_steps=6 format=3 uid="uid://nfeywppnx2fo"]
 
 [ext_resource type="PackedScene" uid="uid://jccfqd1bt8kv" path="res://ColorPicker.tscn" id="1_pc3l0"]
-[ext_resource type="Texture2D" uid="uid://3da3my1d4trn" path="res://icon.svg" id="1_tnnjp"]
+[ext_resource type="Texture2D" uid="uid://6kapt5ti7jsw" path="res://CL.png" id="3_qflg3"]
 
 [sub_resource type="GDScript" id="GDScript_22pdk"]
 script/source = "extends Control
 @onready var canvas=$HSplitContainer/SubViewportContainer/SubViewport
-@onready var light=$HSplitContainer/SubViewportContainer/SubViewport/DirectionalLight2D
+#@onready var light=$HSplitContainer/SubViewportContainer/SubViewport/DirectionalLight2D
 @onready var curLayer=$HSplitContainer/SubViewportContainer/SubViewport/Sprite2D
 var textture:ImageTexture
+var image:Image;
+var color:Color;
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#textture=ImageTexture.create_from_image()
+	image=Image.new()
+	image.load(\"res://CL.png\")
+	#textture=ImageTexture.new()
+	##image.setup_local_to_scene()
+	##image.create_from_data(img.get_width(),img.get_height(),true,Image.FORMAT_RGBA8,img.save_png_to_buffer())
+	##image.save_png_to_buffer()
+	#textture.create_from_image(image)
+	print(image.get_width())
+	
+	curLayer.texture.diffuse_texture=ImageTexture.create_from_image(image)
+	print((curLayer.texture.diffuse_texture as ImageTexture).get_width())
+	(curLayer.texture.diffuse_texture as ImageTexture).update(image)
+	#(curLayer.texture as CanvasTexture).emit_changed()
+	#var t=s.diffuse_texture
+	#s.diffuse_texture=textture
 	pass # Replace with function body.
 
 
@@ -19,16 +35,33 @@ func _ready():
 func _process(delta):
 	pass
 
-
-
 func _on_h_slider_value_changed(value):
-	light.rotation_degrees=value
+	#light.rotation_degrees=value
+	pass # Replace with function body.
+
+
+func _on_sub_viewport_draw_pixel(p):
+	#image.lock()
+	canvas.tr
+	var lp=curLayer.to_local(p)
+	var x=clamp(lp.x,0,image.get_width()-1);
+	var y=clamp(lp.y,0,image.get_height()-1);
+	image.set_pixel(x,y,color)
+	#image.unlock()
+	#s.diffuse_texture=textture
+	(curLayer.texture.diffuse_texture as ImageTexture).update(image)
+	pass # Replace with function body.
+
+
+func _on_color_picker_pointer_change(code):
+	color=code
+	print(color)
 	pass # Replace with function body.
 "
 
 [sub_resource type="GDScript" id="GDScript_x5r1m"]
 script/source = "extends SubViewport
-
+signal drawPixel(p)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -39,15 +72,24 @@ func _ready():
 func _process(delta):
 	pass
 
-func _unhandled_input(event):
-	if !(event is InputEventMouseButton):
+#var isDrag
+func _input(event):
+	var m=event as InputEventMouseButton;
+	var mm=event as InputEventMouseMotion;
+	if mm && Global.isDrag:
+		drawPixel.emit(mm.global_position)
+	if !m:
 		return
-	print(event.position)
+	#var mb=event as InputEventMouseButton;
+	if m.is_pressed():
+		Global.isDrag=true;
+	if m.is_released():
+		Global.isDrag=false;
 	pass
 "
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_8ikg2"]
-diffuse_texture = ExtResource("1_tnnjp")
+diffuse_texture = ExtResource("3_qflg3")
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -75,9 +117,8 @@ handle_input_locally = false
 render_target_update_mode = 4
 script = SubResource("GDScript_x5r1m")
 
-[node name="DirectionalLight2D" type="DirectionalLight2D" parent="HSplitContainer/SubViewportContainer/SubViewport"]
-
 [node name="Sprite2D" type="Sprite2D" parent="HSplitContainer/SubViewportContainer/SubViewport"]
+position = Vector2(200, 200)
 texture = SubResource("CanvasTexture_8ikg2")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
@@ -92,4 +133,10 @@ max_value = 360.0
 page = 30.0
 rounded = true
 
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="HSplitContainer"]
+visible = false
+rotation = 1.47657
+
+[connection signal="drawPixel" from="HSplitContainer/SubViewportContainer/SubViewport" to="." method="_on_sub_viewport_draw_pixel"]
+[connection signal="pointerChange" from="HSplitContainer/VBoxContainer/ColorPicker" to="." method="_on_color_picker_pointer_change"]
 [connection signal="value_changed" from="HSplitContainer/VBoxContainer/HSlider" to="." method="_on_h_slider_value_changed"]

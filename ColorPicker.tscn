@@ -67,6 +67,7 @@ func _on_btn_deg_sub_pressed():
 func _on_color_picked(color):
 	txtCode.text=color.to_html(false)
 	txtRgb.text=\"(%1.2f,%1.2f,%1.2f)\" % [color.r,color.g,color.b]
+	pointerChange.emit(color)
 	pass # Replace with function body.
 "
 

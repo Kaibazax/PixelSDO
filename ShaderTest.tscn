@@ -1,16 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://cqha11127rxwp"]
+[gd_scene load_steps=7 format=3 uid="uid://cqha11127rxwp"]
 
 [ext_resource type="Shader" uid="uid://dcaxptsila061" path="res://ShaderTest.tres" id="1_64dwu"]
-[ext_resource type="Texture2D" uid="uid://l0rkm37xqmdk" path="res://hm.png" id="2_f5sr4"]
-[ext_resource type="Texture2D" uid="uid://6kapt5ti7jsw" path="res://CL.png" id="3_88tu5"]
+[ext_resource type="Shader" uid="uid://dqqpdnykk72tg" path="res://TestShader.tres" id="1_qkdf2"]
+[ext_resource type="Texture2D" uid="uid://l0rkm37xqmdk" path="res://hm.png" id="2_bpinj"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tttj5"]
-shader = ExtResource("1_64dwu")
-shader_parameter/Texture2DParameter = ExtResource("2_f5sr4")
+shader = ExtResource("1_qkdf2")
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_6kyid"]
+diffuse_texture = ExtResource("2_bpinj")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_75lpe"]
 shader = ExtResource("1_64dwu")
-shader_parameter/Texture2DParameter = ExtResource("2_f5sr4")
 
 [node name="ShaderTest" type="Node2D"]
 
@@ -18,18 +19,26 @@ shader_parameter/Texture2DParameter = ExtResource("2_f5sr4")
 texture_filter = 1
 material = SubResource("ShaderMaterial_tttj5")
 position = Vector2(546, 331)
-texture = ExtResource("3_88tu5")
+texture = SubResource("CanvasTexture_6kyid")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="."]
-visible = false
 material = SubResource("ShaderMaterial_75lpe")
 offset_right = 264.0
 offset_bottom = 300.0
 
-[node name="DirectionalLight2D" type="DirectionalLight2D" parent="."]
-position = Vector2(283, 211)
-rotation = 0.485065
+[node name="Node2D" type="Node2D" parent="."]
+visible = false
+position = Vector2(298, 250)
+rotation = 15.64
+
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="Node2D"]
+rotation = 3.14159
 shadow_color = Color(0, 0, 0, 1)
-height = 0.25
+height = 0.4
+
+[node name="DirectionalLight2D2" type="DirectionalLight2D" parent="Node2D"]
+position = Vector2(1.19209e-07, 58.815)
+blend_mode = 1
+shadow_color = Color(0, 0, 0, 1)
