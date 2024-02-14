@@ -21,17 +21,16 @@ var ImgNormal;
 signal pNormalChange(color:Color)
 signal hNormalChange(color:Color)
 signal pLightChange(color:Color)
+signal pLight(a,h)
 #@onready var s:Sprite2D=$Sprite2D
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#ImgNormal=svpNormal.get_texture()
 	#.diffuse_texture.get_image()
 	pass # Replace with function body.
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
-
 func _on_spin_box_value_changed(value):
 	pass # Replace with function body.
 
@@ -83,24 +82,27 @@ func _on_color_picked(color):
 
 
 func _on_normal_gui_input(event):
+	if !ImgNormal:
+		ImgNormal=svpNormal.get_texture().get_image()
 	var mm= event as InputEventMouseMotion
 	if mm:
-		var c=svpNormal.get_texture().get_image().get_pixel(mm.position.x,mm.position.y)
+		var c=ImgNormal.get_pixel(mm.position.x,mm.position.y)
 		if c.r>0||c.g>0||c.b>0:
 			hNormalChange.emit(c)
 		#print(mm.position)
 		#print(ImgNormal.get_texture().get_image().get_pixel(mm.position.x,mm.position.y))
 	var mb= event as InputEventMouseButton
 	if mb:
-		pNormalChange.emit(svpNormal.get_texture().get_image().get_pixel(mb.position.x,mb.position.y))
+		pNormalChange.emit(ImgNormal.get_pixel(mb.position.x,mb.position.y))
 	pass # Replace with function body.
 
 
 func _on_light_gui_input(event):
+	if !ImgNormal:
+		ImgNormal=svpNormal.get_texture().get_image()
 	var mm= event as InputEventMouseMotion
-	var img=svpNormal.get_texture().get_image()
 	if mm:
-		var c=img.get_pixel(mm.position.x,mm.position.y)
+		var c=ImgNormal.get_pixel(mm.position.x,mm.position.y)
 		if c.r>0||c.g>0||c.b>0:
 			var v=Vector2(2*c.g-1,2*c.r-1)
 			dLight.rotation=v.angle()
@@ -109,18 +111,19 @@ func _on_light_gui_input(event):
 		#dLight.rotation_degrees
 	var mb= event as InputEventMouseButton
 	if mb:
-		var c=img.get_pixel(mb.position.x,mb.position.y)
+		var c=ImgNormal.get_pixel(mb.position.x,mb.position.y)
 		if c.r>0||c.g>0||c.b>0:
+			var v=Vector2(2*c.g-1,2*c.r-1)
 			lightCode=c
 			pLightChange.emit(c)
+			pLight.emit(v.angle(),c.b)
 	pass # Replace with function body.
 
 
 func _on_light_mouse_exited():
 	var v=Vector2(2*lightCode.g-1,2*lightCode.r-1)
 	dLight.rotation=v.angle()
-	#+PI/2
-	dLight.height=lightCode.b-0.5
+	dLight.height=lightCode.b
 	pass # Replace with function body.
 "
 
