@@ -226,7 +226,7 @@ layout_mode = 2
 text = "-"
 
 [node name="DirectionalLight2D" type="DirectionalLight2D" parent="HSplitContainer"]
-rotation = 1.47657
+visible = false
 
 [node name="MenuBar" type="MenuBar" parent="."]
 layout_mode = 0
@@ -246,6 +246,5 @@ item_1/id = 1
 [connection signal="drawPixel" from="HSplitContainer/SubViewportContainer/SubViewport" to="." method="_on_sub_viewport_draw_pixel"]
 [connection signal="s_draw" from="HSplitContainer/Canvas" to="." method="_on_sub_viewport_draw_pixel"]
 [connection signal="s_drawline" from="HSplitContainer/Canvas" to="." method="_on_canvas_s_drawline"]
-[connection signal="pointerChange" from="HSplitContainer/VBoxContainer/ColorPicker" to="." method="_on_color_picker_pointer_change"]
 [connection signal="value_changed" from="HSplitContainer/VBoxContainer/HSlider" to="." method="_on_h_slider_value_changed"]
 [connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/+" to="." method="zoomIn"]

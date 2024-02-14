@@ -27,7 +27,10 @@ project/assembly_name="PixelSDO"
 
 enabled=PackedStringArray()
 
+[layer_names]
+
+2d_render/layer_20="UI"
+
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

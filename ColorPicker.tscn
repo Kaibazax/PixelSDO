@@ -1,23 +1,31 @@
-[gd_scene load_steps=5 format=3 uid="uid://jccfqd1bt8kv"]
+[gd_scene load_steps=7 format=3 uid="uid://jccfqd1bt8kv"]
 
 [ext_resource type="Shader" uid="uid://ip2xu8ymh6kb" path="res://Normal.tres" id="1_3e0ix"]
 [ext_resource type="Script" path="res://Pointer.gd" id="3_2bwwu"]
+[ext_resource type="Shader" uid="uid://d3no3gmangwtq" path="res://NormalMap.tres" id="3_y3p0g"]
 
 [sub_resource type="GDScript" id="GDScript_atqhd"]
 script/source = "extends Control
 
-@onready var vp:SubViewport=$HBoxContainer/SubViewportContainer/SubViewport
-@onready var cr:ColorRect=$HBoxContainer/SubViewportContainer/SubViewport/ColorRect
+@onready var cr:ColorRect=$HBoxContainer/VBoxContainer2/SubViewportContainer/svpNormal/Normal
+@onready var crLight:ColorRect=$HBoxContainer/VBoxContainer2/SubViewportContainer2/SubViewport/Light
 @onready var degTxt=$HBoxContainer/VBoxContainer/HFlowContainer/CodeEdit
 @onready var txtCode=$HBoxContainer/VBoxContainer/HBoxContainer/TextEdit
 @onready var txtRgb=$HBoxContainer/VBoxContainer/TextEdit2
+@onready var svpNormal:SubViewport=$HBoxContainer/VBoxContainer2/SubViewportContainer/svpNormal
+@onready var dLight=$HBoxContainer/VBoxContainer2/SubViewportContainer2/SubViewport/DirectionalLight2D
+var ImgNormal;
 @export var color:Color
+@export var lightCode:Color
 #@onready var point:SubViewport=$SubViewportContainer/Node2D
-signal pointerChange(color:Color)
-signal hoverPointerChange(color:Color)
+signal pNormalChange(color:Color)
+signal hNormalChange(color:Color)
+signal pLightChange(color:Color)
 #@onready var s:Sprite2D=$Sprite2D
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	#ImgNormal=svpNormal.get_texture()
+	#.diffuse_texture.get_image()
 	pass # Replace with function body.
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -29,6 +37,7 @@ func _on_spin_box_value_changed(value):
 
 func _on_spin_box_2_value_changed(value):
 	cr.material.set_shader_parameter ( \"ringsNo\",value )
+	crLight.material.set_shader_parameter ( \"ringsNo\",value )
 	pass # Replace with function body.
 
 func _on_button_pressed():
@@ -47,6 +56,7 @@ func _on_btn_deg_add_pressed():
 		#60: value=90
 	degTxt.text=\"%d\" % value
 	cr.material.set_shader_parameter ( \"degNo\",value )
+	crLight.material.set_shader_parameter ( \"degNo\",value )
 	pass # Replace with function body.
 
 func _on_btn_deg_sub_pressed():
@@ -62,12 +72,55 @@ func _on_btn_deg_sub_pressed():
 		#90: value=60
 	degTxt.text=\"%d\" % value
 	cr.material.set_shader_parameter ( \"degNo\",value )
+	crLight.material.set_shader_parameter ( \"degNo\",value )
 	pass # Replace with function body.
 
 func _on_color_picked(color):
 	txtCode.text=color.to_html(false)
 	txtRgb.text=\"(%1.2f,%1.2f,%1.2f)\" % [color.r,color.g,color.b]
-	pointerChange.emit(color)
+	pNormalChange.emit(color)
+	pass # Replace with function body.
+
+
+func _on_normal_gui_input(event):
+	var mm= event as InputEventMouseMotion
+	if mm:
+		var c=svpNormal.get_texture().get_image().get_pixel(mm.position.x,mm.position.y)
+		if c.r>0||c.g>0||c.b>0:
+			hNormalChange.emit(c)
+		#print(mm.position)
+		#print(ImgNormal.get_texture().get_image().get_pixel(mm.position.x,mm.position.y))
+	var mb= event as InputEventMouseButton
+	if mb:
+		pNormalChange.emit(svpNormal.get_texture().get_image().get_pixel(mb.position.x,mb.position.y))
+	pass # Replace with function body.
+
+
+func _on_light_gui_input(event):
+	var mm= event as InputEventMouseMotion
+	var img=svpNormal.get_texture().get_image()
+	if mm:
+		var c=img.get_pixel(mm.position.x,mm.position.y)
+		if c.r>0||c.g>0||c.b>0:
+			var v=Vector2(2*c.g-1,2*c.r-1)
+			dLight.rotation=v.angle()
+			#+PI/2
+			dLight.height=c.b-0.5
+		#dLight.rotation_degrees
+	var mb= event as InputEventMouseButton
+	if mb:
+		var c=img.get_pixel(mb.position.x,mb.position.y)
+		if c.r>0||c.g>0||c.b>0:
+			lightCode=c
+			pLightChange.emit(c)
+	pass # Replace with function body.
+
+
+func _on_light_mouse_exited():
+	var v=Vector2(2*lightCode.g-1,2*lightCode.r-1)
+	dLight.rotation=v.angle()
+	#+PI/2
+	dLight.height=lightCode.b-0.5
 	pass # Replace with function body.
 "
 
@@ -76,55 +129,113 @@ shader = ExtResource("1_3e0ix")
 shader_parameter/degNo = 15
 shader_parameter/ringsNo = 5
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_osa2d"]
+shader = ExtResource("3_y3p0g")
+shader_parameter/degNo = 25
+shader_parameter/ringsNo = 5
+
 [node name="ColorPicker" type="Control"]
-custom_minimum_size = Vector2(400, 256)
+custom_minimum_size = Vector2(256, 512)
 layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -128.0
-offset_right = 200.0
-offset_bottom = 128.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = SubResource("GDScript_atqhd")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 14
-anchor_top = 0.5
+anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_top = -128.0
-offset_bottom = 128.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColorRect2" type="ColorRect" parent="HBoxContainer"]
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="PHover" type="Node2D" parent="HBoxContainer/VBoxContainer2/SubViewportContainer"]
+light_mask = 16
+visibility_layer = 16
+z_index = 5
+position = Vector2(0, -66)
+script = ExtResource("3_2bwwu")
+code = Color(1, 0.164706, 0.537255, 1)
+
+[node name="PNormal" type="Node2D" parent="HBoxContainer/VBoxContainer2/SubViewportContainer"]
+light_mask = 17
+visibility_layer = 17
+z_index = 5
+position = Vector2(0, -66)
+script = ExtResource("3_2bwwu")
+color = Color(1, 1, 1, 0.498039)
+
+[node name="svpNormal" type="SubViewport" parent="HBoxContainer/VBoxContainer2/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(256, 256)
+size_2d_override = Vector2i(256, 256)
+render_target_update_mode = 4
+
+[node name="Normal" type="ColorRect" parent="HBoxContainer/VBoxContainer2/SubViewportContainer/svpNormal"]
+texture_filter = 3
 material = SubResource("ShaderMaterial_lb8lh")
 custom_minimum_size = Vector2(256, 256)
-layout_mode = 2
+offset_right = 256.0
+offset_bottom = 256.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
 mouse_filter = 1
 mouse_force_pass_scroll_events = false
 mouse_default_cursor_shape = 3
 color = Color(0, 0, 0, 1)
 
-[node name="Node2D" type="Node2D" parent="HBoxContainer"]
-position = Vector2(127, 127)
+[node name="SubViewportContainer2" type="SubViewportContainer" parent="HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="PHover" type="Node2D" parent="HBoxContainer/VBoxContainer2/SubViewportContainer2"]
+light_mask = 16
+visibility_layer = 16
+z_index = 5
+position = Vector2(0, -326)
 script = ExtResource("3_2bwwu")
 code = Color(1, 0.164706, 0.537255, 1)
 
-[node name="Node2D2" type="Node2D" parent="HBoxContainer"]
-position = Vector2(254, 254)
-script = ExtResource("3_2bwwu")
-color = Color(1, 1, 1, 0.498039)
+[node name="SubViewport" type="SubViewport" parent="HBoxContainer/VBoxContainer2/SubViewportContainer2"]
+handle_input_locally = false
+size = Vector2i(256, 256)
+render_target_update_mode = 4
+
+[node name="Light" type="ColorRect" parent="HBoxContainer/VBoxContainer2/SubViewportContainer2/SubViewport"]
+light_mask = 3
+visibility_layer = 524291
+material = SubResource("ShaderMaterial_osa2d")
+custom_minimum_size = Vector2(256, 256)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 1
+mouse_force_pass_scroll_events = false
+mouse_default_cursor_shape = 3
+color = Color(0, 0, 0, 1)
+
+[node name="DirectionalLight2D" type="DirectionalLight2D" parent="HBoxContainer/VBoxContainer2/SubViewportContainer2/SubViewport"]
+position = Vector2(0, 196)
+range_item_cull_mask = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="Label" type="Label" parent="HBoxContainer/VBoxContainer"]
 layout_mode = 2
@@ -188,24 +299,13 @@ size_flags_horizontal = 3
 placeholder_text = "(0,0,1)"
 metadata/_edit_use_anchors_ = true
 
-[node name="ColorRect" type="ColorRect" parent="."]
-material = SubResource("ShaderMaterial_lb8lh")
-custom_minimum_size = Vector2(256, 256)
-layout_mode = 2
-offset_left = 2.0
-offset_top = 265.0
-offset_right = 258.0
-offset_bottom = 521.0
-mouse_filter = 1
-mouse_force_pass_scroll_events = false
-mouse_default_cursor_shape = 3
-color = Color(0, 0, 0, 1)
-
-[connection signal="mouse_entered" from="HBoxContainer/ColorRect2" to="." method="_on_color_rect_mouse_entered"]
-[connection signal="mouse_exited" from="HBoxContainer/ColorRect2" to="." method="_on_color_rect_mouse_exited"]
+[connection signal="hNormalChange" from="." to="HBoxContainer/VBoxContainer2/SubViewportContainer/PHover" method="redraw"]
+[connection signal="pLightChange" from="." to="HBoxContainer/VBoxContainer2/SubViewportContainer2/PHover" method="redraw"]
+[connection signal="pNormalChange" from="." to="HBoxContainer/VBoxContainer2/SubViewportContainer/PNormal" method="redraw"]
+[connection signal="gui_input" from="HBoxContainer/VBoxContainer2/SubViewportContainer/svpNormal/Normal" to="." method="_on_normal_gui_input"]
+[connection signal="gui_input" from="HBoxContainer/VBoxContainer2/SubViewportContainer2/SubViewport/Light" to="." method="_on_light_gui_input"]
+[connection signal="mouse_exited" from="HBoxContainer/VBoxContainer2/SubViewportContainer2/SubViewport/Light" to="." method="_on_light_mouse_exited"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/HFlowContainer/btnDegAdd" to="." method="_on_btn_deg_add_pressed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/HFlowContainer/btnDegSub" to="." method="_on_btn_deg_sub_pressed"]
 [connection signal="value_changed" from="HBoxContainer/VBoxContainer/SpinBox2" to="." method="_on_spin_box_2_value_changed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/HBoxContainer/Button" to="." method="_on_button_pressed"]
-[connection signal="mouse_entered" from="ColorRect" to="." method="_on_color_rect_mouse_entered"]
-[connection signal="mouse_exited" from="ColorRect" to="." method="_on_color_rect_mouse_exited"]
