@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://nfeywppnx2fo"]
+[gd_scene load_steps=8 format=3 uid="uid://nfeywppnx2fo"]
 
 [ext_resource type="PackedScene" uid="uid://jccfqd1bt8kv" path="res://ColorPicker.tscn" id="1_pc3l0"]
 [ext_resource type="Texture2D" uid="uid://6kapt5ti7jsw" path="res://CL.png" id="3_qflg3"]
@@ -7,7 +7,7 @@
 script/source = "extends Control
 @onready var canvas=$HSplitContainer/SubViewportContainer/SubViewport
 #@onready var light=$HSplitContainer/SubViewportContainer/SubViewport/DirectionalLight2D
-@onready var curLayer=$HSplitContainer/SubViewportContainer/SubViewport/Sprite2D
+@onready var curLayer=$HSplitContainer/Canvas/TextureRect as TextureRect
 var textture:ImageTexture
 var image:Image;
 var color:Color;
@@ -15,19 +15,10 @@ var color:Color;
 func _ready():
 	image=Image.new()
 	image.load(\"res://CL.png\")
-	#textture=ImageTexture.new()
-	##image.setup_local_to_scene()
-	##image.create_from_data(img.get_width(),img.get_height(),true,Image.FORMAT_RGBA8,img.save_png_to_buffer())
-	##image.save_png_to_buffer()
-	#textture.create_from_image(image)
-	print(image.get_width())
-	
 	curLayer.texture.diffuse_texture=ImageTexture.create_from_image(image)
-	print((curLayer.texture.diffuse_texture as ImageTexture).get_width())
-	(curLayer.texture.diffuse_texture as ImageTexture).update(image)
-	#(curLayer.texture as CanvasTexture).emit_changed()
-	#var t=s.diffuse_texture
-	#s.diffuse_texture=textture
+	#(curLayer.texture.diffuse_texture as ImageTexture).update(image)
+	curLayer.texture.normal_texture=ImageTexture.create_from_image(image)
+	(curLayer.texture.normal_texture as ImageTexture).update(image)
 	pass # Replace with function body.
 
 
@@ -42,20 +33,32 @@ func _on_h_slider_value_changed(value):
 
 func _on_sub_viewport_draw_pixel(p):
 	#image.lock()
-	canvas.tr
-	var lp=curLayer.to_local(p)
+	#canvas.tr
+	var lp=curLayer.get_local_mouse_position()
 	var x=clamp(lp.x,0,image.get_width()-1);
 	var y=clamp(lp.y,0,image.get_height()-1);
 	image.set_pixel(x,y,color)
 	#image.unlock()
 	#s.diffuse_texture=textture
-	(curLayer.texture.diffuse_texture as ImageTexture).update(image)
+	#(curLayer.texture.diffuse_texture as ImageTexture).update(image)
+	(curLayer.texture.normal_texture as ImageTexture).update(image)
 	pass # Replace with function body.
 
 
 func _on_color_picker_pointer_change(code):
 	color=code
 	print(color)
+	pass # Replace with function body.
+
+#
+#func _on_canvas_s_drawline(pa, pb):
+	#image.
+	#(curLayer.texture.diffuse_texture as ImageTexture).update(image)
+	#pass # Replace with function body.
+
+
+func zoomIn():
+	curLayer.scale*=2
 	pass # Replace with function body.
 "
 
@@ -91,6 +94,44 @@ func _input(event):
 [sub_resource type="CanvasTexture" id="CanvasTexture_8ikg2"]
 diffuse_texture = ExtResource("3_qflg3")
 
+[sub_resource type="GDScript" id="GDScript_c2ajr"]
+script/source = "extends Control
+
+signal s_draw(p)
+signal s_drawline(pa,pb)
+var isDraging=false
+var lastPixel
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+
+func _gui_input(event):
+	var mb=event as InputEventMouseButton
+	var mm=event as InputEventMouseMotion
+	if isDraging && mm:
+		s_drawline.emit(lastPixel,mm.position)
+		if lastPixel!=mm.position:
+			lastPixel=mm.position
+			s_draw.emit(mm.position)
+	if !mb:
+		return
+	if mb.button_index==MOUSE_BUTTON_LEFT && mb.is_pressed():
+		isDraging=true
+		lastPixel=mb.position
+	if mb.button_index==MOUSE_BUTTON_LEFT && mb.is_released():
+		isDraging=false
+		lastPixel=null
+	#s_draw.emit(mb.position)
+	pass
+"
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_yad71"]
+
 [node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -110,16 +151,35 @@ grow_vertical = 2
 split_offset = 700
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="HSplitContainer"]
+visible = false
 layout_mode = 2
 
 [node name="SubViewport" type="SubViewport" parent="HSplitContainer/SubViewportContainer"]
 handle_input_locally = false
-render_target_update_mode = 4
+render_target_update_mode = 0
 script = SubResource("GDScript_x5r1m")
 
 [node name="Sprite2D" type="Sprite2D" parent="HSplitContainer/SubViewportContainer/SubViewport"]
 position = Vector2(200, 200)
 texture = SubResource("CanvasTexture_8ikg2")
+
+[node name="Canvas" type="Control" parent="HSplitContainer"]
+texture_filter = 3
+layout_mode = 2
+mouse_default_cursor_shape = 3
+script = SubResource("GDScript_c2ajr")
+
+[node name="TextureRect" type="TextureRect" parent="HSplitContainer/Canvas"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("CanvasTexture_yad71")
+expand_mode = 1
+stretch_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
 layout_mode = 2
@@ -133,10 +193,59 @@ max_value = 360.0
 page = 30.0
 rounded = true
 
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="+" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "+"
+
+[node name="HSlider" type="HSlider" parent="HSplitContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="-" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "-"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="HSplitContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="+" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "+"
+
+[node name="HSlider" type="HSlider" parent="HSplitContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+
+[node name="-" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "-"
+
 [node name="DirectionalLight2D" type="DirectionalLight2D" parent="HSplitContainer"]
-visible = false
 rotation = 1.47657
 
+[node name="MenuBar" type="MenuBar" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="File" type="PopupMenu" parent="MenuBar"]
+title = "File"
+item_count = 2
+item_0/text = "New"
+item_0/id = 0
+item_1/text = "Open"
+item_1/id = 1
+
+[node name="Edit" type="PopupMenu" parent="MenuBar"]
+
 [connection signal="drawPixel" from="HSplitContainer/SubViewportContainer/SubViewport" to="." method="_on_sub_viewport_draw_pixel"]
+[connection signal="s_draw" from="HSplitContainer/Canvas" to="." method="_on_sub_viewport_draw_pixel"]
+[connection signal="s_drawline" from="HSplitContainer/Canvas" to="." method="_on_canvas_s_drawline"]
 [connection signal="pointerChange" from="HSplitContainer/VBoxContainer/ColorPicker" to="." method="_on_color_picker_pointer_change"]
 [connection signal="value_changed" from="HSplitContainer/VBoxContainer/HSlider" to="." method="_on_h_slider_value_changed"]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/+" to="." method="zoomIn"]

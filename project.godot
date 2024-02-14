@@ -23,6 +23,11 @@ Global="*res://global.gd"
 
 project/assembly_name="PixelSDO"
 
+[editor_plugins]
+
+enabled=PackedStringArray()
+
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

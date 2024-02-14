@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://jccfqd1bt8kv"]
+[gd_scene load_steps=5 format=3 uid="uid://jccfqd1bt8kv"]
 
 [ext_resource type="Shader" uid="uid://ip2xu8ymh6kb" path="res://Normal.tres" id="1_3e0ix"]
 [ext_resource type="Script" path="res://Pointer.gd" id="3_2bwwu"]
@@ -71,44 +71,12 @@ func _on_color_picked(color):
 	pass # Replace with function body.
 "
 
-[sub_resource type="GDScript" id="GDScript_wr2w0"]
-script/source = "extends SubViewportContainer
-
-signal colorPicked(color:Color)
-signal colorHover(color:Color)
-@onready var cr:ColorRect=$SubViewport/ColorRect
-@onready var vp:SubViewport=$SubViewport
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
-
-func _gui_input(event):
-	var p=event.position
-	if event is InputEventMouseMotion:
-		var img=vp.get_texture().get_image()
-		var pixel=img.get_pixel(p.x,p.y);
-		colorHover.emit(pixel)
-	if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
-		var img=vp.get_texture().get_image()
-		var pixel=img.get_pixel(p.x,p.y);
-		colorPicked.emit(pixel)
-		#cr.material.set_shader_parameter( \"selectedColor\",pixel )
-	pass
-
-"
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lb8lh"]
 shader = ExtResource("1_3e0ix")
 shader_parameter/degNo = 15
 shader_parameter/ringsNo = 5
 
 [node name="ColorPicker" type="Control"]
-clip_contents = true
 custom_minimum_size = Vector2(400, 256)
 layout_mode = 3
 anchors_preset = 8
@@ -135,34 +103,21 @@ offset_bottom = 128.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 0
-script = SubResource("GDScript_wr2w0")
-metadata/_edit_use_anchors_ = true
-
-[node name="SubViewport" type="SubViewport" parent="HBoxContainer/SubViewportContainer"]
-handle_input_locally = false
-snap_2d_vertices_to_pixel = true
-size = Vector2i(256, 256)
-size_2d_override = Vector2i(256, 256)
-render_target_update_mode = 4
-
-[node name="ColorRect" type="ColorRect" parent="HBoxContainer/SubViewportContainer/SubViewport"]
+[node name="ColorRect2" type="ColorRect" parent="HBoxContainer"]
 material = SubResource("ShaderMaterial_lb8lh")
-offset_right = 256.0
-offset_bottom = 256.0
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 2
 mouse_filter = 1
 mouse_force_pass_scroll_events = false
 mouse_default_cursor_shape = 3
 color = Color(0, 0, 0, 1)
 
-[node name="Node2D" type="Node2D" parent="HBoxContainer/SubViewportContainer"]
+[node name="Node2D" type="Node2D" parent="HBoxContainer"]
 position = Vector2(127, 127)
 script = ExtResource("3_2bwwu")
 code = Color(1, 0.164706, 0.537255, 1)
 
-[node name="Node2D2" type="Node2D" parent="HBoxContainer/SubViewportContainer"]
+[node name="Node2D2" type="Node2D" parent="HBoxContainer"]
 position = Vector2(254, 254)
 script = ExtResource("3_2bwwu")
 color = Color(1, 1, 1, 0.498039)
@@ -233,12 +188,24 @@ size_flags_horizontal = 3
 placeholder_text = "(0,0,1)"
 metadata/_edit_use_anchors_ = true
 
-[connection signal="colorHover" from="HBoxContainer/SubViewportContainer" to="HBoxContainer/SubViewportContainer/Node2D2" method="redraw"]
-[connection signal="colorPicked" from="HBoxContainer/SubViewportContainer" to="." method="_on_color_picked"]
-[connection signal="colorPicked" from="HBoxContainer/SubViewportContainer" to="HBoxContainer/SubViewportContainer/Node2D" method="redraw"]
-[connection signal="mouse_entered" from="HBoxContainer/SubViewportContainer/SubViewport/ColorRect" to="." method="_on_color_rect_mouse_entered"]
-[connection signal="mouse_exited" from="HBoxContainer/SubViewportContainer/SubViewport/ColorRect" to="." method="_on_color_rect_mouse_exited"]
+[node name="ColorRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_lb8lh")
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 2
+offset_left = 2.0
+offset_top = 265.0
+offset_right = 258.0
+offset_bottom = 521.0
+mouse_filter = 1
+mouse_force_pass_scroll_events = false
+mouse_default_cursor_shape = 3
+color = Color(0, 0, 0, 1)
+
+[connection signal="mouse_entered" from="HBoxContainer/ColorRect2" to="." method="_on_color_rect_mouse_entered"]
+[connection signal="mouse_exited" from="HBoxContainer/ColorRect2" to="." method="_on_color_rect_mouse_exited"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/HFlowContainer/btnDegAdd" to="." method="_on_btn_deg_add_pressed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/HFlowContainer/btnDegSub" to="." method="_on_btn_deg_sub_pressed"]
 [connection signal="value_changed" from="HBoxContainer/VBoxContainer/SpinBox2" to="." method="_on_spin_box_2_value_changed"]
 [connection signal="pressed" from="HBoxContainer/VBoxContainer/HBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="mouse_entered" from="ColorRect" to="." method="_on_color_rect_mouse_entered"]
+[connection signal="mouse_exited" from="ColorRect" to="." method="_on_color_rect_mouse_exited"]

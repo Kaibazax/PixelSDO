@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://duhqk7sjifceq"]
+
+[ext_resource type="Shader" uid="uid://tkiolpmensu2" path="res://Light.tres" id="1_48ao8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_12dhe"]
+shader = ExtResource("1_48ao8")
+shader_parameter/degNo = 25
+shader_parameter/ringsNo = 5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_16uy0"]
+shader = ExtResource("1_48ao8")
+shader_parameter/degNo = 25
+shader_parameter/ringsNo = 5
+
+[node name="LightPicker" type="Control"]
+material = SubResource("ShaderMaterial_12dhe")
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 3
+anchors_preset = 0
+
+[node name="TextureRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_16uy0")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

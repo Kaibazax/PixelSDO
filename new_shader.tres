@@ -1,0 +1,36 @@
+[gd_resource type="VisualShader" load_steps=5 format=3 uid="uid://diipw00efe7m1"]
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_la6vq"]
+output_port_for_preview = 0
+input_name = "uv"
+
+[sub_resource type="VisualShaderNodeTransformConstant" id="VisualShaderNodeTransformConstant_anysc"]
+constant = Transform3D(-2, 0, 0, 0, -2, 0, 0, 0, 1, 1, 1, 0)
+
+[sub_resource type="VisualShaderNodeTransformVecMult" id="VisualShaderNodeTransformVecMult_nxyj2"]
+output_port_for_preview = 0
+
+[sub_resource type="VisualShaderNodeVectorLen" id="VisualShaderNodeVectorLen_v11ov"]
+output_port_for_preview = 0
+default_input_values = [0, Vector2(0, 0)]
+op_type = 0
+
+[resource]
+code = "shader_type canvas_item;
+render_mode blend_mix;
+
+
+
+"
+mode = 1
+flags/light_only = false
+nodes/vertex/0/position = Vector2(1320, 280)
+nodes/vertex/2/node = SubResource("VisualShaderNodeInput_la6vq")
+nodes/vertex/2/position = Vector2(360, 540)
+nodes/vertex/3/node = SubResource("VisualShaderNodeTransformConstant_anysc")
+nodes/vertex/3/position = Vector2(580, 920)
+nodes/vertex/4/node = SubResource("VisualShaderNodeTransformVecMult_nxyj2")
+nodes/vertex/4/position = Vector2(1040, 760)
+nodes/vertex/5/node = SubResource("VisualShaderNodeVectorLen_v11ov")
+nodes/vertex/5/position = Vector2(1360, 800)
+nodes/vertex/connections = PackedInt32Array(3, 0, 4, 0, 2, 0, 4, 1, 4, 0, 5, 0)
